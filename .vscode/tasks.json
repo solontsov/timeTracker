@@ -9,7 +9,9 @@
                 "/EHsc",
                 "/nologo",
                 "/Fe${fileDirname}\\${fileBasenameNoExtension}.exe",
-                "${file}"
+                "${file}",
+                //  to link the resulting object file with user32.lib and gdi32.lib
+                "user32.lib", "gdi32.lib"
             ],
             "options": {
                 "cwd": "${fileDirname}"
