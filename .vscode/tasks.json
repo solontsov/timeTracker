@@ -8,9 +8,11 @@
                 "/Zi",
                 "/EHsc",
                 "/nologo",
+                "/FS",
                 "/Fe${fileDirname}\\bin\\${fileBasenameNoExtension}.exe",
                 "/Fo${fileDirname}\\bin\\${fileBasenameNoExtension}.obj",
-                "/Fd${fileDirname}\\..\\bin\\${fileBasenameNoExtension}.pdb",
+                //"/Fd${fileDirname}\\..\\bin\\${fileBasenameNoExtension}.pdb",
+                "/Fd${fileDirname}\\bin\\vc140.pdb",
                 "${file}",
                 //  to link the resulting object file with user32.lib and gdi32.lib
                 "user32.lib", "gdi32.lib"
