@@ -27,7 +27,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         FillRect(hdc, &rect, hbr);
         DeleteObject(hbr);
 
-        TextOutW(hdc, 10, 10, L"321 Hello!", 3); // Use TextOutW for wide-character strings
+        TextOutW(hdc, 10, 10, L"123!", 3); // Use TextOutW for wide-character strings
         EndPaint(hwnd, &ps);
         break;
     }
