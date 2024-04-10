@@ -4,17 +4,29 @@
 #include <ctime>
 
 HWND hwnd;
+int window_length = 70, window_height = 30;
 BOOL trackerIsOn = FALSE;
-RECT rect = {5, 5, 70, 35};
+RECT rect = {0, 0, 70, 30};
+RECT previousWindowPosition;
+
+BOOL mousedown = FALSE;
+POINT lastLocation;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
     {
+    case WM_ACTIVATE:
+        if (0 == wParam) // becoming inactive, put on top
+        {
+            SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+        }
+        break;
     case WM_TIMER:
     {
         // Handle the timer event (update time)
         InvalidateRect(hwnd, NULL, TRUE); // Force repaint
+        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
         break;
     }
     case WM_PAINT:
@@ -48,15 +60,51 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         strftime(timeStr, sizeof(timeStr), "%H:%M:%S", &timeInfo);
 
         // Display the time
-        TextOutA(hdc, 10, 10, timeStr, static_cast<int>(strlen(timeStr)));
+        TextOutA(hdc, 7, 7, timeStr, static_cast<int>(strlen(timeStr)));
 
         EndPaint(hwnd, &ps);
         break;
     }
+    // case WM_LBUTTONDOWN:
+    //     trackerIsOn = !trackerIsOn;
+    //     InvalidateRect(hwnd, &rect, TRUE);
+    //     break;
     case WM_LBUTTONDOWN:
-        trackerIsOn = !trackerIsOn;
-        InvalidateRect(hwnd, &rect, TRUE);
+    {
+        mousedown = true;
+        GetWindowRect(hwnd, &previousWindowPosition);
+        GetCursorPos(&lastLocation);
+        RECT rect;
+        GetWindowRect(hwnd, &rect);
+        lastLocation.x = lastLocation.x - rect.left;
+        lastLocation.y = lastLocation.y - rect.top;
         break;
+    }
+    case WM_LBUTTONUP:
+    {
+        mousedown = false;
+        RECT currentWindowPosition;
+        GetWindowRect(hwnd, &currentWindowPosition);
+        if (abs(currentWindowPosition.left - previousWindowPosition.left) < 3 && abs(currentWindowPosition.top - previousWindowPosition.top) < 3)
+        {
+            trackerIsOn = !trackerIsOn;
+            InvalidateRect(hwnd, &rect, TRUE);
+        }
+
+        break;
+    }
+    case WM_MOUSEMOVE:
+    {
+        if (mousedown)
+        {
+            POINT currentpos;
+            GetCursorPos(&currentpos);
+            int x = currentpos.x - lastLocation.x;
+            int y = currentpos.y - lastLocation.y;
+            MoveWindow(hwnd, x, y, window_length, window_height, false);
+        }
+        break;
+    }
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
@@ -75,7 +123,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     RegisterClassW(&wc);                 // Use RegisterClassW
 
     hwnd = CreateWindowW(L"MyWindowClass", L"timeTracker", WS_POPUP,
-                         CW_USEDEFAULT, CW_USEDEFAULT, 70, 30, NULL, NULL, hInstance, NULL);
+                         CW_USEDEFAULT, CW_USEDEFAULT, window_length, window_length, NULL, NULL, hInstance, NULL);
 
     // Set up a timer to fire every minute (60,000 milliseconds)
     SetTimer(hwnd, 1, 6000, NULL);
