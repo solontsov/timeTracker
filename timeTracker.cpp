@@ -1,12 +1,22 @@
 #include <windows.h>
+#include <iostream>
+#include <chrono>
+#include <ctime>
 
+HWND hwnd;
 BOOL trackerIsOn = FALSE;
-RECT rect = {5, 5, 55, 35};
+RECT rect = {5, 5, 70, 35};
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
     {
+    case WM_TIMER:
+    {
+        // Handle the timer event (update time)
+        InvalidateRect(hwnd, NULL, TRUE); // Force repaint
+        break;
+    }
     case WM_PAINT:
     {
         PAINTSTRUCT ps;
@@ -27,7 +37,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         FillRect(hdc, &rect, hbr);
         DeleteObject(hbr);
 
-        TextOutW(hdc, 10, 10, L"123!", 3); // Use TextOutW for wide-character strings
+        // Get the current time
+        auto now = std::chrono::system_clock::now();
+        std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+
+        // Convert to a string (hours and minutes only)
+        char timeStr[64];
+        struct tm timeInfo;
+        localtime_s(&timeInfo, &currentTime);
+        strftime(timeStr, sizeof(timeStr), "%H:%M:%S", &timeInfo);
+
+        // Display the time
+        TextOutA(hdc, 10, 10, timeStr, static_cast<int>(strlen(timeStr)));
+
         EndPaint(hwnd, &ps);
         break;
     }
@@ -52,9 +74,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     wc.lpszClassName = L"MyWindowClass"; // Prefix with L for wide-character string
     RegisterClassW(&wc);                 // Use RegisterClassW
 
-    HWND hwnd = CreateWindowW(L"MyWindowClass", L"Hello, Windows desktop123!", WS_OVERLAPPEDWINDOW,
-                              CW_USEDEFAULT, CW_USEDEFAULT, 640, 480, NULL, NULL, hInstance, NULL);
+    hwnd = CreateWindowW(L"MyWindowClass", L"timeTracker", WS_POPUP,
+                         CW_USEDEFAULT, CW_USEDEFAULT, 70, 30, NULL, NULL, hInstance, NULL);
 
+    // Set up a timer to fire every minute (60,000 milliseconds)
+    SetTimer(hwnd, 1, 6000, NULL);
     ShowWindow(hwnd, nCmdShow);
 
     MSG msg;
