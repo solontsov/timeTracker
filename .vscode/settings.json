@@ -1,8 +1,12 @@
 {
     "cSpell.words": [
+        "HINSTANCE",
         "hwnd",
         "HWND",
-        "LBUTTONDOWN"
+        "LBUTTONDOWN",
+        "LPSTR",
+        "USEDEFAULT",
+        "WNDCLASSW"
     ],
     "files.associations": {
         "type_traits": "cpp",

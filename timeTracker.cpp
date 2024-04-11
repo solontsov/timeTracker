@@ -146,8 +146,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     hwnd = CreateWindowW(L"MyWindowClass", L"timeTracker", WS_POPUP,
                          CW_USEDEFAULT, CW_USEDEFAULT, window_length, window_length, NULL, NULL, hInstance, NULL);
 
-    // Set up a timer to fire every minute (60,000 milliseconds)
-    SetTimer(hwnd, 1, 6000, NULL);
+    // Set up a timer to fire every second.  1 minute (60,000 milliseconds)
+    SetTimer(hwnd, 1, 1000, NULL);
     ShowWindow(hwnd, nCmdShow);
 
     MSG msg;
