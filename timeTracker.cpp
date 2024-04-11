@@ -3,14 +3,17 @@
 #include <chrono>
 #include <ctime>
 
+
 HWND hwnd;
-int window_length = 70, window_height = 30;
+int window_length = 70, window_height = 60;
 BOOL trackerIsOn = FALSE;
-RECT rect = {0, 0, 70, 30};
+RECT rect = {0, 0, window_length, window_height};
 RECT previousWindowPosition;
 
 BOOL mousedown = FALSE;
 POINT lastLocation;
+
+std::chrono::system_clock::time_point startTimePoint = std::chrono::system_clock::now();
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -62,13 +65,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         // Display the time
         TextOutA(hdc, 7, 7, timeStr, static_cast<int>(strlen(timeStr)));
 
+        // Calculate the duration
+        auto duration = now - startTimePoint;
+
+        char durStr[64];
+        // Convert duration to hours, minutes, and seconds
+        auto hours = std::chrono::duration_cast<std::chrono::hours>(duration);
+        duration -= hours;
+        auto minutes = std::chrono::duration_cast<std::chrono::minutes>(duration);
+        duration -= minutes;
+        auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
+
+        // Format the duration as HH:MM:SS
+        // char durStr[9]; // Space for "HH:MM:SS\0"
+        snprintf(durStr, sizeof(durStr), "%02d:%02d:%02d", hours.count(), minutes.count(), seconds.count());
+        // Display the duration
+        TextOutA(hdc, 7, 35, durStr, static_cast<int>(strlen(durStr)));
         EndPaint(hwnd, &ps);
         break;
     }
-    // case WM_LBUTTONDOWN:
-    //     trackerIsOn = !trackerIsOn;
-    //     InvalidateRect(hwnd, &rect, TRUE);
-    //     break;
+
     case WM_LBUTTONDOWN:
     {
         mousedown = true;
@@ -89,6 +105,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             trackerIsOn = !trackerIsOn;
             InvalidateRect(hwnd, &rect, TRUE);
+
+            if (trackerIsOn)
+            {
+                startTimePoint = std::chrono::system_clock::now();
+            }
         }
 
         break;
